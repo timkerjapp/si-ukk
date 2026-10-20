@@ -126,7 +126,13 @@ export async function getMitraNasional(limit = 100) {
 
 export async function loginDirektorat(email, password) {
   const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) throw new Error('Email atau kata sandi salah');
+  if (error) {
+    const m = (error.message || '').toLowerCase();
+    if (m.includes('invalid login')) throw new Error('Email atau kata sandi salah.');
+    if (m.includes('not confirmed')) throw new Error('Email belum dikonfirmasi. Di Supabase: Authentication → Users → pilih akun → Confirm user (atau buat ulang dengan "Auto Confirm User").');
+    if (m.includes('invalid api key') || m.includes('apikey')) throw new Error('Kunci Supabase di config.js tidak valid. Salin ulang kunci "anon public".');
+    throw new Error('Gagal masuk: ' + error.message);
+  }
   return true;
 }
 export async function logoutDirektorat() { await sb.auth.signOut(); }
