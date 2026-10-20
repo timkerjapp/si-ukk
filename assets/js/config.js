@@ -4,7 +4,7 @@
 export const CONFIG = {
   // 'demo'     → memakai data contoh di browser (tanpa Supabase), untuk mencoba tampilan
   // 'supabase' → memakai database Supabase sungguhan
-  MODE: 'demo',
+  MODE: 'supabase',
 
   // Isi dari Supabase: Project Settings → API
   SUPABASE_URL: 'https://aqqppvjksucxevhywlnu.supabase.co/rest/v1/',
