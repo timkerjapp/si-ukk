@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SI-UKK SMK — Masuk</title>
+<meta name="description" content="Sistem Informasi Uji Kompetensi Keahlian SMK se-Indonesia">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div id="banner"></div>
+<main class="login">
+  <div class="hero">
+    <h1>Sistem Informasi Uji Kompetensi Keahlian</h1>
+    <p class="muted">Pendataan metode UKK dan instansi mitra per konsentrasi keahlian SMK se-Indonesia</p>
+  </div>
+  <div class="card">
+    <div class="role-tabs" role="tablist">
+      <button role="tab" data-role="smk" aria-selected="true">SMK</button>
+      <button role="tab" data-role="dinas" aria-selected="false">Dinas Pendidikan</button>
+      <button role="tab" data-role="dir" aria-selected="false">Direktorat</button>
+    </div>
+
+    <form id="f-smk" class="stack" autocomplete="off">
+      <div>
+        <label for="npsn">NPSN sekolah</label>
+        <input id="npsn" type="text" inputmode="numeric" maxlength="8" placeholder="contoh: 20603307" required>
+      </div>
+      <div id="smk-konfirmasi"></div>
+      <button class="btn primary" style="width:100%" type="submit" id="btn-smk">Cari sekolah</button>
+    </form>
+
+    <form id="f-dinas" class="stack hidden">
+      <div>
+        <label for="dinas">Dinas Pendidikan</label>
+        <select id="dinas" required><option value="">Memuat…</option></select>
+      </div>
+      <button class="btn primary" style="width:100%" type="submit">Masuk</button>
+    </form>
+
+    <form id="f-dir" class="stack hidden">
+      <div><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div>
+      <div><label for="pw">Kata sandi</label><input id="pw" type="password" autocomplete="current-password" required></div>
+      <div id="dir-msg"></div>
+      <button class="btn primary" style="width:100%" type="submit">Masuk</button>
+    </form>
+  </div>
+  <p class="muted small" style="text-align:center;margin-top:18px" id="footer"></p>
+</main>
+<script type="module" src="assets/js/masuk.js"></script>
+</body>
+</html>
