@@ -7,7 +7,7 @@ export const CONFIG = {
   MODE: 'supabase',
 
   // Isi dari Supabase: Project Settings → API
-  SUPABASE_URL: 'https://aqqppvjksucxevhywlnu.supabase.co/rest/v1/',
+  SUPABASE_URL: 'https://aqqppvjksucxevhywlnu.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxcXBwdmprc3VjeGV2aHl3bG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0OTM5MDIsImV4cCI6MjEwODA2OTkwMn0.Yj8rsulUzhLE8xOrgn1YHBad-IrCCPbGGQaqWb5WeIg',
 
   APP_NAME: 'SI-UKK SMK',
