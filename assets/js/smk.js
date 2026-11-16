@@ -1,5 +1,5 @@
 import { api } from './api.js';
-import { $, $$, esc, fmt, fmtWaktu, header, statusChip, laporanChip, progress, toast, modal, qs, errorBox, JENIS_LAPORAN } from './ui.js';
+import { $, $$, esc, fmt, fmtWaktu, header, statusChip, laporanChip, progress, toast, modal, qs, errorBox, JENIS_LAPORAN, downloadXlsx, kkRowsForExport } from './ui.js';
 import { bukaRiwayat } from './riwayat.js';
 
 const npsn = (qs('npsn') || '').replace(/\D/g, '');
@@ -83,7 +83,7 @@ function render() {
       Daftar KK diambil dari Dapodik (KK dengan siswa kelas XII/XIII). Isian bisa diubah kapan saja dan setiap perubahan tercatat di riwayat.
       Bila daftar KK tidak sesuai kenyataan, gunakan tombol <b>Laporkan ketidaksesuaian KK</b>.
     </div>
-    <div class="row" style="justify-content:flex-end"><button class="btn" id="btn-lapor">Laporkan ketidaksesuaian KK</button></div>
+    <div class="row" style="justify-content:flex-end"><button class="btn" id="btn-unduh">Unduh data isian (Excel)</button><button class="btn" id="btn-lapor">Laporkan ketidaksesuaian KK</button></div>
     <div id="kk-list">${kks.length ? [...groups].map(([g, list]) => `<div class="program-head">${esc(g)}</div><div class="stack">${list.map(kkCard).join('')}</div>`).join('') : '<div class="alert warn">Belum ada KK tercatat untuk sekolah ini. Gunakan “Laporkan ketidaksesuaian KK” untuk menambahkan KK.</div>'}</div>
     ${lapAktif.length ? `<div class="card"><h2>Laporan ketidaksesuaian dari sekolah ini</h2>
       <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Jenis</th><th>KK</th><th>Keterangan</th><th>Status</th><th></th></tr></thead><tbody>
@@ -131,6 +131,8 @@ app.addEventListener('click', async e => {
     bukaRiwayat(k, { npsn, canRestore: true, onRestored: refresh });
   } else if (t.dataset.laporTidak) {
     formLapor('TIDAK_ADA', +t.dataset.laporTidak);
+  } else if (t.id === 'btn-unduh') {
+    unduh(t);
   } else if (t.id === 'btn-lapor') {
     formLapor();
   } else if (t.dataset.batal) {
@@ -180,6 +182,31 @@ function formLapor(jenis = 'TIDAK_ADA', kkId = null) {
     try { await api.lapor(npsn, d); m.close(); toast('Laporan terkirim'); await refresh(); }
     catch (err) { m.el.querySelector('#lapor-msg').innerHTML = `<div class="alert bad">${esc(err.message)}</div>`; }
   });
+}
+
+async function unduh(btn) {
+  btn.disabled = true; const label = btn.textContent; btn.textContent = 'Menyiapkan file…';
+  try {
+    const [semuaRiwayat, semuaLaporan] = await Promise.all([
+      Promise.all(kks.map(k => api.getRiwayat(k.kk_id).then(rs => rs.map(r => ({ ...r, konsentrasi: k.konsentrasi }))))),
+      api.getLaporan({ npsn }),
+    ]);
+    const nm = kode => ref.metode.find(x => x.kode === kode)?.nama || '';
+    const nj = kode => ref.jenis.find(x => x.kode === kode)?.nama || '';
+    const riwayat = semuaRiwayat.flat().sort((a, b) => b.waktu.localeCompare(a.waktu)).map(r => ({
+      'Waktu': fmtWaktu(r.waktu), 'Konsentrasi Keahlian': r.konsentrasi, 'Aksi': r.aksi === 'pulihkan' ? 'Dipulihkan' : 'Disimpan',
+      'Metode Sebelumnya': nm(r.metode_lama), 'Jenis Mitra Sebelumnya': nj(r.jenis_mitra_lama), 'Instansi Sebelumnya': r.nama_instansi_lama || '',
+      'Metode Baru': nm(r.metode_baru), 'Jenis Mitra Baru': nj(r.jenis_mitra_baru), 'Instansi Baru': r.nama_instansi_baru || '' }));
+    const laporanRows = semuaLaporan.map(l => ({ 'Tanggal': fmtWaktu(l.dibuat_pada), 'Jenis Laporan': JENIS_LAPORAN[l.jenis],
+      'Konsentrasi Keahlian': l.konsentrasi || '', 'Keterangan': l.keterangan || '', 'Status': l.status, 'Catatan Direktorat': l.catatan_direktorat || '' }));
+    const nama = sekolah.nama.replace(/[^\w]+/g, '_').replace(/^_|_$/g, '');
+    await downloadXlsx(`Isian_UKK_${sekolah.npsn}_${nama}.xlsx`, [
+      { name: 'Isian per KK', rows: kkRowsForExport(kks) },
+      { name: 'Riwayat Perubahan', rows: riwayat },
+      { name: 'Laporan KK', rows: laporanRows },
+    ]);
+  } catch (err) { toast('Gagal mengunduh: ' + err.message, true); }
+  btn.disabled = false; btn.textContent = label;
 }
 
 load();
