@@ -27,11 +27,10 @@ function kkCard(k) {
     k.kurikulum === 'K13' ? `<span class="chip grey" title="Siswa kelas XII/XIII masih tercatat di Kurikulum 2013">K13</span>` : '',
     k.sumber === 'tambahan' ? `<span class="chip info">Tambahan sekolah</span>` : '',
   ].join(' ');
-  const siswa = `Siswa kelas XII: <b class="num">${fmt(k.siswa_xii)}</b>${k.siswa_xiii ? ` · kelas XIII: <b class="num">${fmt(k.siswa_xiii)}</b>` : ''}`;
   if (k.dikecualikan) {
     const lap = laporan.find(l => l.kk_id === k.kk_id && l.jenis === 'TIDAK_ADA' && l.status !== 'dibatalkan');
     return `<div class="kk excluded" data-kk="${k.kk_id}">
-      <div class="kk-head"><div><div class="kk-title">${esc(k.konsentrasi)} ${badges}</div><div class="small muted">${siswa}</div></div>
+      <div class="kk-head"><div><div class="kk-title">${esc(k.konsentrasi)} ${badges}</div></div>
       <span class="chip grey">Dilaporkan tidak ada</span></div>
       <p class="small muted" style="margin:8px 0 0">KK ini tidak dihitung dalam pengisian.${lap?.keterangan ? ' Keterangan: ' + esc(lap.keterangan) : ''}</p>
       ${lap && lap.status === 'baru' ? `<div class="kk-actions"><button class="btn small" data-batal="${lap.id}">Batalkan laporan</button></div>` : ''}
@@ -41,7 +40,7 @@ function kkCard(k) {
   const tanpa = m === 'TANPA' || !m;
   return `<div class="kk" data-kk="${k.kk_id}">
     <div class="kk-head">
-      <div><div class="kk-title">${esc(k.konsentrasi)} ${badges}</div><div class="small muted">${siswa}</div></div>
+      <div><div class="kk-title">${esc(k.konsentrasi)} ${badges}</div></div>
       <div>${k.terisi ? `<span class="chip ok">Sudah diisi</span> <span class="small muted">${fmtWaktu(k.diubah_pada)}</span>` : `<span class="chip bad">Belum diisi</span>`}</div>
     </div>
     <form class="kk-form" data-form="${k.kk_id}">
@@ -201,7 +200,7 @@ async function unduh(btn) {
       'Konsentrasi Keahlian': l.konsentrasi || '', 'Keterangan': l.keterangan || '', 'Status': l.status, 'Catatan Direktorat': l.catatan_direktorat || '' }));
     const nama = sekolah.nama.replace(/[^\w]+/g, '_').replace(/^_|_$/g, '');
     await downloadXlsx(`Isian_UKK_${sekolah.npsn}_${nama}.xlsx`, [
-      { name: 'Isian per KK', rows: kkRowsForExport(kks) },
+      { name: 'Isian per KK', rows: kkRowsForExport(kks).map(({ 'Siswa XII': _a, 'Siswa XIII': _b, ...r }) => r) },
       { name: 'Riwayat Perubahan', rows: riwayat },
       { name: 'Laporan KK', rows: laporanRows },
     ]);
